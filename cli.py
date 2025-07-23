@@ -1,6 +1,8 @@
 # CLI.py
 
 import argparse
+import re
+
 from agents.super_agent import get_super_agent
 from models import get_model
 from tools import RAGService
@@ -11,10 +13,12 @@ from prompt_toolkit.styles import Style
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
 
-from rich.console import Console
+from rich.console import Console, Group
 from rich.status import Status
 from rich.text import Text
-from rich.panel import Panel # Import Panel for the box
+from rich.panel import Panel
+from rich.syntax import Syntax
+from rich.align import Align
 
 console = Console()
 
@@ -51,20 +55,12 @@ def display_banner():
 
         console.print(text)
 
-    # Encapsulate welcome and exit messages in a Panel
     welcome_message = Text("Welcome to Roberto, your personal AI assistant!", style="bold yellow")
     exit_message = Text("Type 'exit', 'quit', 'bye', or 'q' to end the session.", style="dim")
-
     panel_content = Text.assemble(welcome_message, "\n", exit_message)
 
-    panel = Panel(
-        panel_content,
-        border_style="cyan",
-        padding=(0, 2), # Changed padding to 0 vertical
-        expand=False
-    )
+    panel = Panel(panel_content, border_style="cyan", padding=(0, 2), expand=False)
     console.print(panel)
-
 
 def main():
     display_banner()
@@ -96,31 +92,70 @@ def main():
                     with Status("Indexing documents...", spinner="dots", console=console):
                         rag_service.load_and_index_documents(path_to_index)
                 else:
-                    console.print("Please provide a path to index.")
+                    _print_error("Please provide a path to index.")
             else:
                 with Status("💭 Roberto is thinking...", spinner="dots", console=console):
                     result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
-                
-                # Encapsulate Roberto's response in a Panel
-                response_content = result["messages"][-1].content
-                response_panel = Panel(
-                    response_content,
-                    title="💡 Roberto says:",
-                    title_align="left",
-                    border_style="cyan",
-                    padding=(1, 2),
-                    expand=False
-                )
-                console.print(response_panel)
+                _print_roberto_response(result["messages"][-1].content)
 
         except EOFError:
             console.print("Goodbye!")
             break
+        except FileNotFoundError as e:
+            _print_error(f"{e}")
         except KeyboardInterrupt:
             console.print("Operation cancelled. Type 'exit' or 'quit' to quit.")
             continue
         except Exception as e:
-            console.print(f"An error occurred: {e}")
+            _print_error(f"{e}")
+
+def _print_roberto_response(response_content: str):
+    code_block_pattern = r"""```(?P<lang>\w+)?\n(?P<code>[\s\S]*?)```"""
+    matches = list(re.finditer(code_block_pattern, response_content))
+
+    output_renderables = []
+    last_idx = 0
+
+    for match in matches:
+        if match.start() > last_idx:
+            before = response_content[last_idx:match.start()]
+            output_renderables.append(Text(before.strip()))
+
+        lang = match.group('lang') or 'python'
+        code = match.group('code').strip()
+        syntax = Syntax(code, lang, theme="monokai", line_numbers=True)
+        output_renderables.append(syntax)
+
+        last_idx = match.end()
+
+    if last_idx < len(response_content):
+        after = response_content[last_idx:]
+        output_renderables.append(Text(after.strip()))
+
+    if not output_renderables:
+        output_renderables = [Text(response_content.strip() or "(No response)")]
+
+    response_panel = Panel(
+        Group(*output_renderables),
+        title="💡 Roberto says:",
+        title_align="left",
+        border_style="cyan",
+        padding=(1, 2),
+        expand=False
+    )
+    console.print(response_panel)
+
+def _print_error(error_msg: str):
+    error_text = Text(error_msg, style="bold red")
+    panel = Panel(
+        Align.left(error_text),
+        title="❌ Error:",
+        title_align="left",
+        border_style="red",
+        padding=(1, 2),
+        expand=False
+    )
+    console.print(panel)
 
 if __name__ == "__main__":
     main()

@@ -25,8 +25,7 @@ class RAGService:
 
     def load_and_index_documents(self, documents_path):
         if not os.path.exists(documents_path):
-            print(f"Error: Documents path does not exist: {documents_path}")
-            return
+            raise FileNotFoundError(f"Documents path does not exist: {documents_path}")
 
         print(f"Loading documents from: {documents_path}")
         reader = SimpleDirectoryReader(input_dir=documents_path, recursive=True)
