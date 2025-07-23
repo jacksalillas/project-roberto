@@ -84,7 +84,7 @@ def main():
 
     while True:
         try:
-            user_input = prompt("Roberto > ", history=history, style=custom_style).strip()
+            user_input = prompt("You > ", history=history, style=custom_style).strip()
 
             if user_input.lower() in ['exit', 'quit']:
                 console.print("Goodbye!")
@@ -98,9 +98,20 @@ def main():
                 else:
                     console.print("Please provide a path to index.")
             else:
-                with Status("Roberto is thinking...", spinner="dots", console=console):
+                with Status("💭 Roberto is thinking...", spinner="dots", console=console):
                     result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
-                console.print(result["messages"][-1].content)
+                
+                # Encapsulate Roberto's response in a Panel
+                response_content = result["messages"][-1].content
+                response_panel = Panel(
+                    response_content,
+                    title="💡 Roberto says:",
+                    title_align="left",
+                    border_style="cyan",
+                    padding=(1, 2),
+                    expand=False
+                )
+                console.print(response_panel)
 
         except EOFError:
             console.print("Goodbye!")
