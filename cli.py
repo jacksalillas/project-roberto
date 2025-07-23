@@ -17,17 +17,26 @@ from rich.status import Status # Import Status for loading indicators
 console = Console()
 
 def display_banner():
-    print("""
-██████╗  ██████╗ ███████╗███████╗████████╗ ███████╗
-██╔══██╗██╔═══██╗██╔════╝██╔════╝╚══██╔══╝ ██╔════╝
-██████╔╝██║   ██║█████╗  █████╗     ██║    █████╗  
-██╔══██╗██║   ██║██╔══╝  ██╔══╝     ██║    ██╔══╝  
-██║  ██║╚██████╔╝██║     ███████╗   ██║    ███████╗
-╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝   ╚═╝    ╚══════╝
-""")
-    console.print("Welcome to Roberto, your personal AI assistant!")
-    console.print("Type 'exit' or 'quit' to end the session.")
-    console.print("---------------------------------------------------")
+    # ROBERTO banner with gradient colors
+    banner_lines = [
+        "██████╗  ██████╗ ██████╗ ███████╗██████╗ ████████╗ ██████╗ ",
+        "██╔══██╗██╔═══██╗██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔═══██╗",
+        "██████╔╝██║   ██║██████╔╝█████╗  ██████╔╝   ██║   ██║   ██║",
+        "██╔══██╗██║   ██║██╔══██╗██╔══╝  ██╔══██╗   ██║   ██║   ██║",
+        "██║  ██║╚██████╔╝██████╔╝███████╗██║  ██║   ██║   ╚██████╔╝",
+        "╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ "
+    ]
+    
+    # Gradient colors from blue to cyan to green
+    colors = ["blue", "bright_blue", "cyan", "bright_cyan", "green", "bright_green"]
+    
+    for i, line in enumerate(banner_lines):
+        color = colors[i % len(colors)]
+        console.print(line, style=f"bold {color}")
+    
+    console.print("\nWelcome to Roberto, your personal AI assistant!", style="bold yellow")
+    console.print("Type 'exit' or 'quit' to end the session.", style="dim")
+    console.print("---------------------------------------------------", style="dim")
 
 def main():
     display_banner()
