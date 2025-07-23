@@ -2,6 +2,7 @@
 
 import argparse
 import re
+import json # Import json module
 
 from agents.super_agent import get_super_agent
 from models import get_model
@@ -111,7 +112,14 @@ def main():
                     roberto_response_content = result["messages"][-1].content
                     _print_roberto_response(roberto_response_content)
                     messages.append(result["messages"][-1]) # Add Roberto's response to history
-                    cache_service.set(user_input, roberto_response_content) # Cache the response
+
+                    # Determine if the response is for a temporary fact
+                    is_temporary_fact = False
+                    temporary_keywords = ["weather", "time", "date", "current", "now"]
+                    if any(keyword in user_input.lower() for keyword in temporary_keywords):
+                        is_temporary_fact = True
+
+                    cache_service.set(user_input, roberto_response_content, is_temporary=is_temporary_fact) # Cache the response
 
         except EOFError:
             console.print("Goodbye!")
@@ -169,7 +177,15 @@ def _print_roberto_response(response_content: str):
     console.print(response_panel)
 
     if sources_text:
-        console.print(Text(f"\nSources: {sources_text}", style="dim"))
+        try:
+            sources_data = json.loads(sources_text)
+            if "sources" in sources_data and isinstance(sources_data["sources"], list):
+                formatted_sources = ", ".join([f"<{s}>" for s in sources_data["sources"]])
+                console.print(Text(f"\nSources: {formatted_sources}", style="dim"))
+            else:
+                console.print(Text(f"\nSources: {sources_text}", style="dim")) # Fallback if not expected JSON
+        except json.JSONDecodeError:
+            console.print(Text(f"\nSources: {sources_text}", style="dim")) # Fallback if not JSON
 
 
 def _print_error(error_msg: str):

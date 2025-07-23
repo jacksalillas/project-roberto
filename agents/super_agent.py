@@ -49,7 +49,7 @@ def get_super_agent(llm: Runnable) -> Runnable:
 
                 Answer the user's question directly if you know the answer. If you do not know the answer, or if the information needs to be current and verified, then use the `web_search` tool. The `web_search` tool will return a JSON string with two keys: `content` (the search results) and `sources` (a list of URLs).
 
-                When you use a tool, provide a natural, conversational answer based on the tool's output. Do not explicitly state your thought process, actions, or observations; just provide the answer. Do not mention that you are using a tool or how you obtained the information; just state the answer as if it's your own knowledge."""
+                When you use the `web_search` tool, you MUST parse the JSON output. Use the `content` from the JSON as the basis for your natural language answer. Then, append a blank line, followed by "Sources:" and a comma-separated list of the URLs from the `sources` key, each enclosed in angle brackets (e.g., <https://example.com>). If there are no sources, omit the "Sources:" line. **Crucially, never mention that you used a tool, how you obtained the information, or any internal thought processes. Just state the answer as if it's your own knowledge.**"""
             ),
             MessagesPlaceholder(variable_name="messages"),
         ]
