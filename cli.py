@@ -1,4 +1,4 @@
-# main.py
+# CLI.py
 
 import argparse
 from agents.super_agent import get_super_agent
@@ -12,48 +12,67 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.history import InMemoryHistory
 
 from rich.console import Console
-from rich.status import Status # Import Status for loading indicators
+from rich.status import Status
+from rich.text import Text
 
 console = Console()
 
 def display_banner():
-    # ROBERTO banner with gradient colors
+    # ROBERTO banner with true gradient colors - slanted style
     banner_lines = [
-        "██████╗  ██████╗ ██████╗ ███████╗██████╗ ████████╗ ██████╗ ",
-        "██╔══██╗██╔═══██╗██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔═══██╗",
-        "██████╔╝██║   ██║██████╔╝█████╗  ██████╔╝   ██║   ██║   ██║",
-        "██╔══██╗██║   ██║██╔══██╗██╔══╝  ██╔══██╗   ██║   ██║   ██║",
-        "██║  ██║╚██████╔╝██████╔╝███████╗██║  ██║   ██║   ╚██████╔╝",
-        "╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ "
+        "      ██████╗  ██████╗ ██████╗ ███████╗██████╗ ████████╗ ██████╗ ",
+        "     ██╔══██╗██╔═══██╗██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔═══██╗",
+        "    ██████╔╝██║   ██║██████╔╝█████╗  ██████╔╝   ██║   ██║   ██║",
+        "   ██╔══██╗██║   ██║██╔══██╗██╔══╝  ██╔══██╗   ██║   ██║   ██║",
+        "  ██║  ██║╚██████╔╝██████╔╝███████╗██║  ██║   ██║   ╚██████╔╝",
+        "  ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ "
     ]
-    
-    # Gradient colors from blue to cyan to green
-    colors = ["blue", "bright_blue", "cyan", "bright_cyan", "green", "bright_green"]
-    
-    for i, line in enumerate(banner_lines):
-        color = colors[i % len(colors)]
-        console.print(line, style=f"bold {color}")
-    
+
+    for line in banner_lines:
+        text = Text(line, style="bold")
+        line_length = len(line)
+
+        for j, char in enumerate(line):
+            if char not in [' ', '\n']:
+                progress = j / max(1, line_length - 1)
+                if progress <= 0.5:
+                    ratio = progress * 2
+                    r = int(0 * (1 - ratio) + 0 * ratio)
+                    g = int(100 * (1 - ratio) + 255 * ratio)
+                    b = 255
+                else:
+                    ratio = (progress - 0.5) * 2
+                    r = 0
+                    g = 255
+                    b = int(255 * (1 - ratio) + 0 * ratio)
+                color = f"rgb({r},{g},{b})"
+                text.stylize(color, j, j + 1)
+
+        console.print(text)
+
     console.print("\nWelcome to Roberto, your personal AI assistant!", style="bold yellow")
     console.print("Type 'exit' or 'quit' to end the session.", style="dim")
     console.print("---------------------------------------------------", style="dim")
 
 def main():
     display_banner()
-
-    # Initialize RAGService once
     rag_service = RAGService()
-
-    # For now, we'll hardcode the LLM to ollama for interactive mode
-    # In a more advanced setup, we could allow switching LLMs dynamically
     llm = get_model("ollama")
     agent = get_super_agent(llm)
-
     history = InMemoryHistory()
+
+    custom_style = Style.from_dict({
+        'prompt': 'ansibrightblue bold',
+        'input': 'ansiblue',
+        'completion-menu.completion': 'bg:#008888 #ffffff',
+        'completion-menu.completion.current': 'bg:#00aaaa #000000',
+        'scrollbar.background': 'bg:#88aaaa',
+        'scrollbar.button': 'bg:#222222',
+    })
 
     while True:
         try:
-            user_input = prompt("Roberto > ", history=history).strip()
+            user_input = prompt("Roberto > ", history=history, style=custom_style).strip()
 
             if user_input.lower() in ['exit', 'quit']:
                 console.print("Goodbye!")
@@ -67,17 +86,14 @@ def main():
                 else:
                     console.print("Please provide a path to index.")
             else:
-                # Pass the user input to the agent
                 with Status("Roberto is thinking...", spinner="dots", console=console):
                     result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
                 console.print(result["messages"][-1].content)
 
         except EOFError:
-            # Ctrl+D pressed
             console.print("Goodbye!")
             break
         except KeyboardInterrupt:
-            # Ctrl+C pressed
             console.print("Operation cancelled. Type 'exit' or 'quit' to quit.")
             continue
         except Exception as e:
