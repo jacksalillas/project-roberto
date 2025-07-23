@@ -10,6 +10,7 @@ from tools import RAGService
 from tools.cache_service import CacheService # Import CacheService
 from langchain_core.messages import HumanMessage, AIMessage
 from llama_index.embeddings.ollama import OllamaEmbedding # Import OllamaEmbedding
+from tools.get_time_tool import get_local_time # Import the new time tool
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
@@ -65,6 +66,12 @@ def display_banner():
     panel = Panel(panel_content, border_style="cyan", padding=(0, 2), expand=False)
     console.print(panel)
 
+def _handle_time_query(user_input: str) -> str | None:
+    time_keywords = ["time", "date", "current time", "what time is it", "today's date"]
+    if any(keyword in user_input.lower() for keyword in time_keywords):
+        return get_local_time.invoke({}) # Correctly call the tool
+    return None
+
 def main():
     display_banner()
     rag_service = RAGService()
@@ -91,6 +98,14 @@ def main():
             if user_input.lower() in ['exit', 'quit', 'bye', 'q']:
                 console.print("Goodbye!")
                 break
+
+            # Handle direct time/date queries
+            time_response = _handle_time_query(user_input)
+            if time_response:
+                _print_roberto_response(time_response)
+                messages.append(HumanMessage(content=user_input))
+                messages.append(AIMessage(content=time_response))
+                continue # Skip further processing for time queries
 
             if user_input.startswith("index "):
                 path_to_index = user_input[len("index "):].strip()

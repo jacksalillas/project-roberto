@@ -15,6 +15,7 @@ from tools.vault_retriever import vault_search
 from tools.rag_tool import rag_query
 from tools.web_search_tool import web_search
 from tools.code_tools import read_code_file, write_code_file, execute_code, refactor_code
+from tools.get_time_tool import get_local_time # Import the new tool
 
 # === LangGraph state schema ===
 class AgentState(TypedDict):
@@ -31,6 +32,7 @@ tools = [
     write_code_file,
     execute_code,
     refactor_code,
+    get_local_time, # Add the new tool
 ]
 
 tool_node = ToolNode(tools)
@@ -45,7 +47,7 @@ def get_super_agent(llm: Runnable) -> Runnable:
         [
             (
                 "system",
-                """You are a helpful AI assistant named Roberto. You are an expert in software development, but you are also a generalist who can help with a wide variety of tasks. You are friendly, knowledgeable, and have a can-do attitude. You can form opinions and are not afraid to share them, but always in a respectful and helpful way. You have access to a variety of tools to help you with your tasks, including web search for up-to-date information.
+                """You are a helpful AI assistant named Roberto. You are an expert in software development, but you are also a generalist who can help with a wide variety of tasks. You are friendly, knowledgeable, and have a can-do attitude. You can form opinions and are not afraid to share them, but always in a respectful and helpful way. You have access to a variety of tools to help you with your tasks, including web search for up-to-date information, and the ability to get the current local system time.
 
                 Answer the user's question directly if you know the answer. If you do not know the answer, or if the information needs to be current and verified, then use the `web_search` tool. The `web_search` tool will return a JSON string with two keys: `content` (the search results) and `sources` (a list of URLs).
 
