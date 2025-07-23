@@ -53,7 +53,7 @@ def display_banner():
 
     # Encapsulate welcome and exit messages in a Panel
     welcome_message = Text("Welcome to Roberto, your personal AI assistant!", style="bold yellow")
-    exit_message = Text("Type 'exit' or 'quit' to end the session.", style="dim")
+    exit_message = Text("Type 'exit', 'quit', 'bye', or 'q' to end the session.", style="dim")
 
     panel_content = Text.assemble(welcome_message, "\n", exit_message)
 
@@ -86,7 +86,7 @@ def main():
         try:
             user_input = prompt("You > ", history=history, style=custom_style).strip()
 
-            if user_input.lower() in ['exit', 'quit']:
+            if user_input.lower() in ['exit', 'quit', 'bye', 'q']:
                 console.print("Goodbye!")
                 break
 
