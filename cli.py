@@ -68,6 +68,7 @@ def main():
     llm = get_model("ollama")
     agent = get_super_agent(llm)
     history = InMemoryHistory()
+    messages = [] # Initialize messages list for conversation history
 
     custom_style = Style.from_dict({
         'prompt': 'ansibrightblue bold',
@@ -94,9 +95,12 @@ def main():
                 else:
                     _print_error("Please provide a path to index.")
             else:
+                messages.append(HumanMessage(content=user_input)) # Add user message to history
                 with Status("💭 Roberto is thinking...", spinner="dots", console=console):
-                    result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
-                _print_roberto_response(result["messages"][-1].content)
+                    result = agent.invoke({"messages": messages}) # Pass full history
+                roberto_response_content = result["messages"][-1].content
+                _print_roberto_response(roberto_response_content)
+                messages.append(result["messages"][-1]) # Add Roberto's response to history
 
         except EOFError:
             console.print("Goodbye!")
