@@ -1,4 +1,3 @@
-
 # Project Roberto: Your Personal AI Assistant
 
 Welcome to Project Roberto! This project is your very own personal AI assistant, designed to be a super-intelligent, multi-skilled agent that can help you with a wide variety of tasks. Whether you need help with coding, writing notes, managing your to-do list, or just getting information, Roberto is here to help.
@@ -13,6 +12,18 @@ Roberto is built with some of the latest and greatest AI technology, including:
 *   **Ollama:** A tool that lets you run powerful language models like Mistral right on your own computer, for free.
 *   **ChromaDB:** A super-fast database for storing and retrieving information, which acts as Roberto's memory.
 *   **LlamaIndex:** A tool that helps Roberto read and understand your documents, so he can learn from them.
+
+## What's New with Roberto? (Recent Upgrades!)
+
+Roberto just got some awesome upgrades to make him even smarter and more helpful:
+
+*   **Super Memory for Conversations:** Roberto now remembers everything you've talked about in your current chat! This means you can ask follow-up questions, and he'll understand the context, just like talking to a real person. No more repeating yourself!
+
+*   **Smarter Web Search:** When Roberto needs to find information online, he's gotten much smarter. He'll search the web for you and then tell you what he found in a natural, easy-to-understand way. Plus, he'll always show you exactly where he got his information from (the "Sources"), so you know it's reliable!
+
+*   **Lightning-Fast Answers (Smart Caching):** Roberto has a super memory for answers! If you ask him a question, and then later ask a *similar* question (even if it's worded a bit differently), he'll remember the answer and tell you super fast. He uses a special brain called `nomic-embed-text` to understand what your questions *mean*, not just what words you use. This makes him much quicker for questions he's already thought about. Think of it as his "short-term memory bank" for quick recalls!
+
+*   **Fresh Facts (Temporary Cache Expiry):** For things that change often, like the weather or the current time, Roberto is extra smart. He'll remember these temporary facts for about 15 minutes. After that, if you ask again, he'll go get the freshest information, so you're always up-to-date. For facts that don't change much (like the capital of a country), he'll remember them forever!
 
 ## What Can Roberto Do?
 
@@ -77,10 +88,11 @@ Before you can run Roberto, you'll need to install a few things. Open your termi
     brew install ollama
     ```
 
-2.  **Download the Mistral Model:** This is the language model that Roberto will use.
+2.  **Download the Language Models:** Roberto uses these models to think and understand.
 
     ```bash
     ollama pull mistral
+    ollama pull nomic-embed-text # New! For super-smart caching
     ```
 
 3.  **Clone the Project:** This will download the project to your computer.
