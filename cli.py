@@ -14,6 +14,7 @@ from prompt_toolkit.history import InMemoryHistory
 from rich.console import Console
 from rich.status import Status
 from rich.text import Text
+from rich.panel import Panel # Import Panel for the box
 
 console = Console()
 
@@ -50,9 +51,20 @@ def display_banner():
 
         console.print(text)
 
-    console.print("\nWelcome to Roberto, your personal AI assistant!", style="bold yellow")
-    console.print("Type 'exit' or 'quit' to end the session.", style="dim")
-    console.print("---------------------------------------------------", style="dim")
+    # Encapsulate welcome and exit messages in a Panel
+    welcome_message = Text("Welcome to Roberto, your personal AI assistant!", style="bold yellow")
+    exit_message = Text("Type 'exit' or 'quit' to end the session.", style="dim")
+
+    panel_content = Text.assemble(welcome_message, "\n", exit_message)
+
+    panel = Panel(
+        panel_content,
+        border_style="cyan",
+        padding=(0, 2), # Changed padding to 0 vertical
+        expand=False
+    )
+    console.print(panel)
+
 
 def main():
     display_banner()
