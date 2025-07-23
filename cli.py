@@ -120,6 +120,14 @@ def _print_roberto_response(response_content: str):
     output_renderables = []
     last_idx = 0
 
+    # Extract sources if present
+    sources_pattern = r"\n\nSources: (.+)"
+    sources_match = re.search(sources_pattern, response_content)
+    sources_text = ""
+    if sources_match:
+        sources_text = sources_match.group(1)
+        response_content = response_content[:sources_match.start()]
+
     for match in matches:
         if match.start() > last_idx:
             before = response_content[last_idx:match.start()]
@@ -148,6 +156,10 @@ def _print_roberto_response(response_content: str):
         expand=False
     )
     console.print(response_panel)
+
+    if sources_text:
+        console.print(Text(f"\nSources: {sources_text}", style="dim"))
+
 
 def _print_error(error_msg: str):
     error_text = Text(error_msg, style="bold red")
