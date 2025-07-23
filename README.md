@@ -65,6 +65,7 @@ This guide assumes you have the following installed on your computer:
 *   **Python 3:** Roberto is written in Python, so you'll need to have it installed.
 *   **Homebrew:** This is a package manager for macOS that makes it easy to install software.
 *   **Git:** This is a version control system that you'll use to download the project.
+*   **Obsidian or Heynote (Optional):** If you want to use Roberto to manage your notes, you'll need to have a note-taking app like Obsidian or Heynote installed. These apps store your notes as plain text files in a folder on your computer, which makes it easy for Roberto to read them.
 
 ### Requirements
 
@@ -132,12 +133,30 @@ Now that Roberto is all set up, you can start using him. Here are a few examples
     python3 main.py task --llm ollama --task "What's the latest news on AI?"
     ```
 
-## Next Steps
+## Using Roberto with Your Notes
 
-This is just the beginning for Project Roberto. There are many ways we can make him even better, such as:
+One of the most powerful features of Roberto is his ability to read and understand your notes. This allows you to create a personalized knowledge base that you can query and interact with in natural language.
 
-*   **Adding More Tools:** We can add more tools to give him new skills.
-*   **Improving His Memory:** We can make his memory even better by adding features like filtering and metadata.
-*   **Giving Him a Voice:** We could even give him a voice so you can talk to him instead of typing.
+To use Roberto with your notes, you'll need to have a note-taking app that stores your notes as plain text files in a folder on your computer. Some popular apps that do this are:
 
-I hope you enjoy using Roberto! If you have any questions or ideas for how to make him better, please let me know.
+*   **Obsidian:** A powerful knowledge base that works on top of a local folder of Markdown files.
+*   **Heynote:** A simple and elegant note-taking app for your terminal.
+
+Once you have your notes in a folder, you can use the `index` command to add them to Roberto's memory. For example, if your notes are in a folder called `~/MyNotes`, you would run the following command:
+
+```bash
+python3 main.py index --path ~/MyNotes
+```
+
+Once your notes are indexed, you can ask Roberto questions about them. For example, you could ask:
+
+*   "What are the main points from my notes on project planning?"
+*   "Summarize my notes on the book 'The Pragmatic Programmer'."
+*   "What did I write about my meeting with John Doe?"
+
+Roberto can also help you create new notes. For example, you could say:
+
+*   "Write a note about my idea for a new app."
+*   "Create a to-do list for my weekend projects."
+
+By combining Roberto with a note-taking app like Obsidian or Heynote, you can create a powerful and personalized knowledge management system that helps you stay organized and informed.
