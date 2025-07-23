@@ -11,6 +11,7 @@ from tools.cache_service import CacheService # Import CacheService
 from langchain_core.messages import HumanMessage, AIMessage
 from llama_index.embeddings.ollama import OllamaEmbedding # Import OllamaEmbedding
 from tools.get_time_tool import get_local_time # Import the new time tool
+from tools.persona_service import PersonaService # Import PersonaService
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
@@ -77,8 +78,10 @@ def main():
     rag_service = RAGService()
     embed_model = OllamaEmbedding(model_name="nomic-embed-text") # Initialize OllamaEmbedding
     cache_service = CacheService(embed_model=embed_model) # Initialize CacheService with embed_model
+    persona_service = PersonaService() # Initialize PersonaService
+    current_persona_description = None # Initialize current persona
     llm = get_model("ollama")
-    agent = get_super_agent(llm)
+    agent = get_super_agent(llm) # Agent will be re-initialized with persona
     history = InMemoryHistory()
     messages = [] # Initialize messages list for conversation history
 
@@ -98,6 +101,49 @@ def main():
             if user_input.lower() in ['exit', 'quit', 'bye', 'q']:
                 console.print("Goodbye!")
                 break
+
+            elif user_input.startswith("/set_persona "):
+                parts = user_input.split(" ", 2)
+                if len(parts) == 3:
+                    persona_name = parts[1]
+                    persona_description = parts[2]
+                    persona_service.set_persona(persona_name, persona_description)
+                    console.print(f"Persona '{persona_name}' saved.")
+                else:
+                    _print_error("Usage: /set_persona <name> <description>")
+                continue
+
+            elif user_input.startswith("/use_persona "):
+                persona_name = user_input.split(" ", 1)[1]
+                description = persona_service.get_persona(persona_name)
+                if description:
+                    current_persona_description = description
+                    agent = get_super_agent(llm, persona_description=current_persona_description) # Re-initialize agent with new persona
+                    messages = [] # Clear history for new persona
+                    console.print(f"Switched to persona '{persona_name}'.")
+                else:
+                    _print_error(f"Persona '{persona_name}' not found.")
+                continue
+
+            elif user_input == "/list_personas":
+                personas = persona_service.list_personas()
+                if personas:
+                    console.print("Available personas:")
+                    for p in personas:
+                        console.print(f"- {p}")
+                else:
+                    console.print("No personas saved.")
+                continue
+
+            elif user_input.startswith("/delete_persona "):
+                persona_name = user_input.split(" ", 1)[1]
+                persona_service.delete_persona(persona_name)
+                console.print(f"Persona '{persona_name}' deleted.")
+                if current_persona_description and current_persona_description == persona_service.get_persona(persona_name): # If deleted current persona
+                    current_persona_description = None
+                    agent = get_super_agent(llm) # Reset agent to default persona
+                    messages = [] # Clear history
+                continue
 
             # Handle direct time/date queries
             time_response = _handle_time_query(user_input)

@@ -40,7 +40,7 @@ tool_node = ToolNode(tools)
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # === Build LangGraph ReAct agent ===
-def get_super_agent(llm: Runnable) -> Runnable:
+def get_super_agent(llm: Runnable, persona_description: str | None = None) -> Runnable:
     """Construct a LangGraph ReAct agent with your tools"""
 
     prompt = ChatPromptTemplate.from_messages(
