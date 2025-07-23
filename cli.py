@@ -6,7 +6,9 @@ import re
 from agents.super_agent import get_super_agent
 from models import get_model
 from tools import RAGService
-from langchain_core.messages import HumanMessage
+from tools.cache_service import CacheService # Import CacheService
+from langchain_core.messages import HumanMessage, AIMessage
+from llama_index.embeddings.ollama import OllamaEmbedding # Import OllamaEmbedding
 
 from prompt_toolkit import prompt
 from prompt_toolkit.styles import Style
@@ -65,6 +67,8 @@ def display_banner():
 def main():
     display_banner()
     rag_service = RAGService()
+    embed_model = OllamaEmbedding(model_name="nomic-embed-text") # Initialize OllamaEmbedding
+    cache_service = CacheService(embed_model=embed_model) # Initialize CacheService with embed_model
     llm = get_model("ollama")
     agent = get_super_agent(llm)
     history = InMemoryHistory()
@@ -95,12 +99,19 @@ def main():
                 else:
                     _print_error("Please provide a path to index.")
             else:
-                messages.append(HumanMessage(content=user_input)) # Add user message to history
-                with Status("💭 Roberto is thinking...", spinner="dots", console=console):
-                    result = agent.invoke({"messages": messages}) # Pass full history
-                roberto_response_content = result["messages"][-1].content
-                _print_roberto_response(roberto_response_content)
-                messages.append(result["messages"][-1]) # Add Roberto's response to history
+                cached_response = cache_service.get(user_input)
+                if cached_response:
+                    _print_roberto_response(cached_response)
+                    messages.append(HumanMessage(content=user_input)) # Add user message to history
+                    messages.append(AIMessage(content=cached_response)) # Add cached response to history
+                else:
+                    messages.append(HumanMessage(content=user_input)) # Add user message to history
+                    with Status("💭 Roberto is thinking...", spinner="dots", console=console):
+                        result = agent.invoke({"messages": messages}) # Pass full history
+                    roberto_response_content = result["messages"][-1].content
+                    _print_roberto_response(roberto_response_content)
+                    messages.append(result["messages"][-1]) # Add Roberto's response to history
+                    cache_service.set(user_input, roberto_response_content) # Cache the response
 
         except EOFError:
             console.print("Goodbye!")
