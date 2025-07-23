@@ -58,6 +58,14 @@ class PersonaService:
         conn.commit()
         conn.close()
 
+    def append_to_persona(self, name: str, additional_description: str):
+        current_description = self.get_persona(name)
+        if current_description:
+            new_description = f"{current_description} {additional_description}"
+        else:
+            new_description = additional_description
+        self.set_persona(name, new_description)
+
     def clear_all_personas(self):
         conn = self._get_db_connection()
         cursor = conn.cursor()

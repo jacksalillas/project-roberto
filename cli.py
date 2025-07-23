@@ -73,6 +73,15 @@ def _handle_time_query(user_input: str) -> str | None:
         return get_local_time.invoke({}) # Correctly call the tool
     return None
 
+def _handle_persona_query(user_input: str, current_persona_description: str | None) -> str | None:
+    persona_keywords = ["what is your persona", "your persona", "who are you now", "who are you"]
+    if any(keyword in user_input.lower() for keyword in persona_keywords):
+        if current_persona_description:
+            return f"My current persona is: {current_persona_description}"
+        else:
+            return "I am currently operating with my default persona as a helpful AI assistant."
+    return None
+
 def main():
     display_banner()
     rag_service = RAGService()
@@ -102,6 +111,18 @@ def main():
                 console.print("Goodbye!")
                 break
 
+            elif user_input.startswith("/"):
+                persona_name_attempt = user_input[1:].strip()
+                description = persona_service.get_persona(persona_name_attempt)
+                if description:
+                    current_persona_description = description
+                    agent = get_super_agent(llm, persona_description=current_persona_description) # Re-initialize agent with new persona
+                    messages = [] # Clear history for new persona
+                    console.print(f"Switched to persona '{persona_name_attempt}'.")
+                else:
+                    _print_error(f"Unknown command or persona: {user_input}")
+                continue
+
             elif user_input.startswith("/set_persona "):
                 parts = user_input.split(" ", 2)
                 if len(parts) == 3:
@@ -123,6 +144,13 @@ def main():
                     console.print(f"Switched to persona '{persona_name}'.")
                 else:
                     _print_error(f"Persona '{persona_name}' not found.")
+                continue
+
+            elif user_input == "/reset_persona":
+                current_persona_description = None
+                agent = get_super_agent(llm) # Reset agent to default persona
+                messages = [] # Clear history
+                console.print("Switched to default Roberto persona.")
                 continue
 
             elif user_input == "/list_personas":
@@ -152,6 +180,14 @@ def main():
                 messages.append(HumanMessage(content=user_input))
                 messages.append(AIMessage(content=time_response))
                 continue # Skip further processing for time queries
+
+            # Handle direct persona queries
+            persona_response = _handle_persona_query(user_input, current_persona_description)
+            if persona_response:
+                _print_roberto_response(persona_response)
+                messages.append(HumanMessage(content=user_input))
+                messages.append(AIMessage(content=persona_response))
+                continue # Skip further processing for persona queries
 
             if user_input.startswith("index "):
                 path_to_index = user_input[len("index "):].strip()
