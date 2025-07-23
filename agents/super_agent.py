@@ -14,6 +14,7 @@ from tools.note_writer import note_tool
 from tools.vault_retriever import vault_search
 from tools.rag_tool import rag_query
 from tools.web_search_tool import web_search
+from tools.code_tools import read_code_file, write_code_file, execute_code, refactor_code
 
 # === LangGraph state schema ===
 class AgentState(TypedDict):
@@ -26,6 +27,10 @@ tools = [
     vault_search,
     rag_query,
     web_search,
+    read_code_file,
+    write_code_file,
+    execute_code,
+    refactor_code,
 ]
 
 tool_node = ToolNode(tools)
